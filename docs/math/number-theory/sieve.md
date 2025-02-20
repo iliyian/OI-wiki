@@ -1,4 +1,4 @@
-author: inkydragon, TravorLZH, YOYO-UIAT, wood3, shuzhouliu, Mr-Python-in-China, HeRaNO
+author: inkydragon, TravorLZH, YOYO-UIAT, wood3, shuzhouliu, Mr-Python-in-China, HeRaNO, weilycoder
 
 ## 素数筛法
 
@@ -43,6 +43,7 @@ author: inkydragon, TravorLZH, YOYO-UIAT, wood3, shuzhouliu, Mr-Python-in-China,
     ```python
     prime = []
     is_prime = [False] * N
+    
     
     def Eratosthenes(n):
         is_prime[0] = is_prime[1] = False
@@ -105,11 +106,11 @@ author: inkydragon, TravorLZH, YOYO-UIAT, wood3, shuzhouliu, Mr-Python-in-China,
       for (int i = 2; i <= n; ++i) is_prime[i] = true;
       // i * i <= n 说明 i <= sqrt(n)
       for (int i = 2; i * i <= n; ++i) {
-        if (is_prime[i]) {
-          prime.push_back(i);
+        if (is_prime[i])
           for (int j = i * i; j <= n; j += i) is_prime[j] = false;
-        }
       }
+      for (int i = 2; i <= n; ++i)
+        if (is_prime[i]) prime.push_back(i);
     }
     ```
 
@@ -118,16 +119,19 @@ author: inkydragon, TravorLZH, YOYO-UIAT, wood3, shuzhouliu, Mr-Python-in-China,
     prime = []
     is_prime = [False] * N
     
+    
     def Eratosthenes(n):
         is_prime[0] = is_prime[1] = False
         for i in range(2, n + 1):
             is_prime[i] = True
         # 让 i 循环到 <= sqrt(n)
-        for i in range(2, isqrt(n) + 1): # `isqrt` 是 Python 3.8 新增的函数
+        for i in range(2, isqrt(n) + 1):  # `isqrt` 是 Python 3.8 新增的函数
             if is_prime[i]:
-                prime.append(i)
                 for j in range(i * i, n + 1, i):
                     is_prime[j] = False
+        for i in range(2, n + 1):
+            if is_prime[i]:
+                prime.append(i)
     ```
 
 这种优化不会影响渐进时间复杂度，实际上重复以上证明，我们将得到 $n \ln \ln \sqrt n + o(n)$，根据对数的性质，它们的渐进相同，但操作次数会明显减少。
@@ -142,11 +146,13 @@ author: inkydragon, TravorLZH, YOYO-UIAT, wood3, shuzhouliu, Mr-Python-in-China,
 
 我们注意到筛选时只需要 `bool` 类型的数组。`bool` 数组的一个元素一般占用 $1$ 字节（即 $8$ 比特），但是存储一个布尔值只需要 $1$ 个比特就足够了。
 
-我们可以使用 [位运算](../bit.md) 的相关知识，将每个布尔值压到一个比特位中，这样我们仅需使用 $n$ 比特（即 $\dfrac n 8$ 字节）而非 $n$ 字节，可以显著减少内存占用。
-
-但是，这种称为 **位级压缩** 的方法会使这些位的操作复杂化。任何位上的读写操作都需要多次算术运算，最终会使算法变慢。因此，这种方法只有在 $n$ 特别大，以至于我们不能再分配内存时才合理。在这种情况下，我们将牺牲效率，通过显著降低算法速度以节省内存（减小到原来的 $\dfrac n 8$）。
+我们可以使用 [位运算](../bit.md) 的相关知识，将每个布尔值压到一个比特位中，这样我们仅需使用 $n$ 比特（即 $\dfrac n 8$ 字节）而非 $n$ 字节，可以显著减少内存占用。这种方式被称为「位级压缩」。
 
 值得一提的是，存在自动执行位级压缩的数据结构，如 C++ 中的 `vector<bool>` 和 `bitset<>`。
+
+另外，`vector<bool>` 和 `bitset<>` 对程序有常数优化，时间复杂度 $O(n \log \log n)$ 的埃氏筛在使用 `bitset<>` 或 `vector<bool>` 优化后，性能甚至超过时间复杂度 $O(n)$ 的欧拉筛。
+
+参见 [bitset: 与埃氏筛结合](../../lang/csl/bitset.md#与埃氏筛结合)。
 
 #### 分块筛选
 
@@ -161,7 +167,7 @@ author: inkydragon, TravorLZH, YOYO-UIAT, wood3, shuzhouliu, Mr-Python-in-China,
 ???+ note "实现"
     ```cpp
     int count_primes(int n) {
-      const int S = 10000;
+      constexpr static int S = 10000;
       vector<int> primes;
       int nsqrt = sqrt(n);
       vector<char> is_prime(nsqrt + 1, true);
@@ -233,6 +239,7 @@ author: inkydragon, TravorLZH, YOYO-UIAT, wood3, shuzhouliu, Mr-Python-in-China,
         ```python
         pri = []
         not_prime = [False] * N
+        
         
         def pre(n):
             for i in range(2, n + 1):
@@ -317,6 +324,7 @@ $$
     not_prime = [False] * N
     phi = [0] * N
     
+    
     def pre(n):
         phi[1] = 1
         for i in range(2, n + 1):
@@ -382,6 +390,7 @@ $$
     pri = []
     not_prime = [False] * N
     mu = [0] * N
+    
     
     def pre(n):
         mu[1] = 1
@@ -455,6 +464,7 @@ $$
     d = [0] * N
     num = [0] * N
     
+    
     def pre(n):
         d[1] = 1
         for i in range(2, n + 1):
@@ -516,6 +526,7 @@ $f_i$ 表示 $i$ 的约数和，$g_i$ 表示 $i$ 的最小质因子的 $p^0+p^1+
     f = [0] * N
     g = [0] * N
     
+    
     def pre(n):
         g[1] = f[1] = 1
         for i in range(2, n + 1):
@@ -537,7 +548,7 @@ $f_i$ 表示 $i$ 的约数和，$g_i$ 表示 $i$ 的最小质因子的 $p^0+p^1+
 
 ## 一般的积性函数
 
-假如一个 [积性函数](./basic.md#积性函数)  $f$ 满足：对于任意质数 $p$ 和正整数 $k$，可以在 $O(1)$ 时间内计算 $f(p^k)$，那么可以在 $O(n)$ 时间内筛出 $f(1),f(2),\dots,f(n)$ 的值。
+假如一个 [积性函数](./basic.md#积性函数)  $f$ 满足：对于任意质数 $p$ 和正整数 $k$，可以在关于 $k$ 的低次多项式时间内计算 $f(p^k)$，那么可以在 $O(n)$ 时间内筛出 $f(1),f(2),\dots,f(n)$ 的值。
 
 设合数 $n$ 的质因子分解是 $\prod_{i=1}^k p_i^{\alpha_i}$，其中 $p_1<p_2<\dots<p_k$ 为质数，我们在线性筛中记录 $g_n=p_1^{\alpha_1}$，假如 $n$ 被 $x\cdot p$ 筛掉（$p$ 是质数），那么 $g$ 满足如下递推式：
 
